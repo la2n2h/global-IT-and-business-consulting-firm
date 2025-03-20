@@ -35,23 +35,52 @@ iInitial task is to gather data on the most sought-after programming skills from
   - Share insights through a presentation, showcasing your storytelling and data analysis skills.
 
 # DATA PREPARE
-## Accessing APIs
 
-#### Install the required libraries
-```
-!pip install requests
-!pip install pillow
-```
+## Scraping internet websites, accessing APIs, and working with datasets
 
-#### Requests in Python
+### Collect Jobs Data using Job API
+Collect the number of job postings for the following locations using the API: Los Angeles, New York, San Francisco, Washington DC, Seattle, Austin, Detroit
+
+Objective: Determine the number of jobs currently open for various technologies and for various locations
 ```
-# import libraries
+#Import required libraries
 import requests
-import os 
-from PIL import Image
-from IPython.display import IFrame
+import pandas as pd
+import json
+```
 
-# get data from website ibm.com
-url='https://www.ibm.com/'
-r=requests.get(url)
+```
+# Write a function to get the number of jobs for the Python technology.
 
+api_url='https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DA0321EN-SkillsNetwork/labs/module%201/Accessing%20Data%20Using%20APIs/jobs.json'
+
+# technology and location list
+technologies = ['C', 'C#', 'C++', 'Java', 'JavaScript', 'Python', 'Scala', 'Oracle', 'SQL', 'MySQL', 'PostgreSQL', 'MongoDB']
+locations = ['Los Angeles', 'New York', 'San Francisco', 'Washington DC', 'Seattle', 'Austin', 'Detroit']
+
+def get_number_of_jobs_T(technology, location):
+    # send request to API and get data
+    response = requests.get(api_url)
+    # check error
+    if response.status_code != 200:
+        print (f' error fetching data for {technology} in {location}')
+        return (technology, location, 0) 
+    # convert data to Json
+    jobs_data = response.json()
+    # count the technology job in each location
+    number_of_jobs = sum( 1 for job in jobs_data if technology.lower() in job['Key Skills'].lower() and location.lower() in job['Location'].lower())
+    return (technology, location, number_of_jobs)
+
+# create the list for result
+results = [get_number_of_jobs_T(tech, loc) for tech in technologies for loc in locations]
+
+# convert list to data frame
+df = pd.DataFrame(results, columns=['Technology', 'Location', 'Number of Jobs'])
+
+# save the data to excel file
+df.to_excel('D:/project/project_IT/job-postings.xlsx', index = False)
+print(f' File saved ')
+
+df.head(10)
+
+````
